@@ -147,10 +147,10 @@ app.get('/api/employees', (req, res) => {
 app.post('/api/employees', (req, res) => {
   const { token } = req.query;
   if (token !== 'lingui_admin_2026') return res.status(401).json({ error: '口令错误' });
-  const { name, phone } = req.body;
+  const { name, phone, title } = req.body;
   if (!name) return res.status(400).json({ error: '请填写员工姓名' });
   const emps = readEmployees();
-  const emp = { id: 'emp_' + Date.now().toString(36), name: name.trim(), phone: (phone || '').trim(), createdAt: new Date().toISOString() };
+  const emp = { id: 'emp_' + Date.now().toString(36), name: name.trim(), phone: (phone || '').trim(), title: (title || '').trim(), createdAt: new Date().toISOString() };
   emps.push(emp);
   writeEmployees(emps);
   res.json(emp);
