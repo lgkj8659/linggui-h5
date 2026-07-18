@@ -302,14 +302,14 @@ app.get('/api/leads/:id/ai-suggest', async (req, res) => {
       const b = last.before, a = last.after;
       if (a.budget && b.budget && a.budget !== b.budget) {
         const diff = parseInt(a.budget)-parseInt(b.budget);
-        if (diff > 0) sug.push('\U0001f4b0 \u9884\u7b97\u63d0\u5347'+diff+'\u4e07\u2192\u8d2d\u4e70\u529b\u589e\u5f3a');
-        else sug.push('\U0001f4b0 \u9884\u7b97\u51cf\u5c11'+Math.abs(diff)+'\u4e07\u2192\u5173\u6ce8\u8d44\u91d1\u72b6\u51b5');
+        if (diff > 0) sug.push('\u{1F4B0} \u9884\u7b97\u63d0\u5347'+diff+'\u4e07\u2192\u8d2d\u4e70\u529b\u589e\u5f3a');
+        else sug.push('\u{1F4B0} \u9884\u7b97\u51cf\u5c11'+Math.abs(diff)+'\u4e07\u2192\u5173\u6ce8\u8d44\u91d1\u72b6\u51b5');
       }
-      if (a.area && b.area && a.area !== b.area) sug.push('\U0001f3e0 \u9762\u79ef\u9700\u6c42\u4ece'+b.area+'\u53d8\u4e3a'+a.area+'\u2192\u91cd\u65b0\u5339\u914d\u6237\u578b');
-      if (a.location && b.location && a.location !== b.location) sug.push('\U0001f4cd \u5173\u6ce8\u533a\u57df\u4ece"'+b.location+'"\u53d8\u4e3a"'+a.location+'"\u2192\u91cd\u65b0\u63a8\u8350\u677f\u5757');
+      if (a.area && b.area && a.area !== b.area) sug.push('\u{1F3E0} \u9762\u79ef\u9700\u6c42\u4ece'+b.area+'\u53d8\u4e3a'+a.area+'\u2192\u91cd\u65b0\u5339\u914d\u6237\u578b');
+      if (a.location && b.location && a.location !== b.location) sug.push('\u{1F4CD} \u5173\u6ce8\u533a\u57df\u4ece"'+b.location+'"\u53d8\u4e3a"'+a.location+'"\u2192\u91cd\u65b0\u63a8\u8350\u677f\u5757');
     }
-    if (!reqs.budget && !reqs.area && !reqs.location) sug.push('\U0001f4dd \u5c1a\u672a\u8bb0\u5f55\u5ba2\u6237\u9700\u6c42');
-    if (sug.length === 0) sug.push('\U0001f4dd \u6682\u65e0\u9700\u6c42\u53d8\u66f4');
+    if (!reqs.budget && !reqs.area && !reqs.location) sug.push('\u{1F4DD} \u5c1a\u672a\u8bb0\u5f55\u5ba2\u6237\u9700\u6c42');
+    if (sug.length === 0) sug.push('\u{1F4DD} \u6682\u65e0\u9700\u6c42\u53d8\u66f4');
     return res.json({ suggestions: sug, source: 'rules' });
   }
   try {
