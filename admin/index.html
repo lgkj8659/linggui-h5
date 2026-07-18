@@ -79,7 +79,7 @@ tr:hover{background:#f7f9ff}
       <select id="f-st"><option value="">全部状态</option><option value="new">新线索</option><option value="contacted">已联系</option><option value="converted">已转化</option><option value="closed">已关闭</option></select>
       <button class="btn-p" onclick="load()">🔍 查询</button>
       <button class="btn-s" onclick="exportCSV()">📥 导出</button><button class="btn-s" onclick="manageEmployees()">👥 员工</button>
-      <button class="btn-d" onclick="clearData()">🗑 清空</button>
+      <button class="btn-d" onclick="clearData()">🗑 清空</button><button class="btn-s" onclick="showSettings()">⚙️ 设置</button>
       <span class="cnt" id="cnt"></span>
     </div>
     <table><thead><tr><th>时间</th><th>类型</th><th>姓名</th><th>联系方式</th><th>综合分</th><th>等级</th><th>分配</th><th>状态</th><th>操作</th></tr></thead><tbody id="tb"></tbody></table>
@@ -91,7 +91,25 @@ tr:hover{background:#f7f9ff}
   <h2 id="m-title"></h2>
   <div id="m-body"></div>
 </div></div>
-<script src="../content.js"></script>
+<script src="../content.js">
+function showSettings() {
+  fetch('/api/config?token=lingui_admin_2026').then(function(r){return r.json();}).then(function(d){
+    var key = prompt('DeepSeek API Key（\u23ce\u4fdd\u5b58\uff0c\u7559\u7a7a=\u89c4\u5219\u5f15\u64ce\uff09', d.hasKey ? 'sk-...' : '');
+    if (key !== null) {
+      fetch('/api/config?token=lingui_admin_2026',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deepseekKey:key==='sk-...'?'':key})})
+      .then(function(r){return r.json();}).then(function(d2){alert('\u5df2\u4fdd\u5b58\u3002AI\u6a21\u5f0f\uff1a'+(key&&key!=='sk-...'?'DeepSeek':'\u89c4\u5219\u5f15\u64ce'));}).catch(function(){alert('\u4fdd\u5b58\u5931\u8d25');});
+    }
+  }).catch(function(){alert('\u83b7\u53d6\u914d\u7f6e\u5931\u8d25');});
+}
+function getAISug(id) {
+  var el=document.getElementById('ai-adm');el.innerHTML='<div style="text-align:center;color:#888;padding:10px">\u5206\u6790\u4e2d\u2026</div>';el.style.display='block';
+  fetch('/api/leads/'+id+'/ai-suggest?token=lingui_admin_2026').then(function(r){return r.json();}).then(function(d){
+    if(d.error){el.innerHTML=d.error;return;}
+    el.innerHTML=(d.suggestions||[]).map(function(s){return '<div style="padding:8px 10px;background:#f9f9f9;border-radius:6px;margin:4px 0;font-size:13px;color:#555">'+s+'</div>';}).join('');
+  }).catch(function(){el.innerHTML='<div style="color:#DC2626">\u5206\u6790\u5931\u8d25</div>';});
+}
+
+</script>
 <script>
 var DATA = { server: false, token: '' };
 var ALL = [];
@@ -277,6 +295,24 @@ function addEmployee(){
 }
 function deleteEmployee(id){if(!confirm('确定删除该员工？'))return;if(DATA.server){fetch('/api/employees/'+id+'?token='+DATA.token,{method:'DELETE'}).then(function(){loadEmployees();manageEmployees();}).catch(function(){});}}
 function updateAssignee(id){var a=document.getElementById('assign-select').value;if(DATA.server){fetch('/api/leads/'+id+'?token='+DATA.token,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({assignee:a})}).catch(function(){});}}
+
+function showSettings() {
+  fetch('/api/config?token=lingui_admin_2026').then(function(r){return r.json();}).then(function(d){
+    var key = prompt('DeepSeek API Key（\u23ce\u4fdd\u5b58\uff0c\u7559\u7a7a=\u89c4\u5219\u5f15\u64ce\uff09', d.hasKey ? 'sk-...' : '');
+    if (key !== null) {
+      fetch('/api/config?token=lingui_admin_2026',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({deepseekKey:key==='sk-...'?'':key})})
+      .then(function(r){return r.json();}).then(function(d2){alert('\u5df2\u4fdd\u5b58\u3002AI\u6a21\u5f0f\uff1a'+(key&&key!=='sk-...'?'DeepSeek':'\u89c4\u5219\u5f15\u64ce'));}).catch(function(){alert('\u4fdd\u5b58\u5931\u8d25');});
+    }
+  }).catch(function(){alert('\u83b7\u53d6\u914d\u7f6e\u5931\u8d25');});
+}
+function getAISug(id) {
+  var el=document.getElementById('ai-adm');el.innerHTML='<div style="text-align:center;color:#888;padding:10px">\u5206\u6790\u4e2d\u2026</div>';el.style.display='block';
+  fetch('/api/leads/'+id+'/ai-suggest?token=lingui_admin_2026').then(function(r){return r.json();}).then(function(d){
+    if(d.error){el.innerHTML=d.error;return;}
+    el.innerHTML=(d.suggestions||[]).map(function(s){return '<div style="padding:8px 10px;background:#f9f9f9;border-radius:6px;margin:4px 0;font-size:13px;color:#555">'+s+'</div>';}).join('');
+  }).catch(function(){el.innerHTML='<div style="color:#DC2626">\u5206\u6790\u5931\u8d25</div>';});
+}
+
 </script>
 <!-- 员工管理 -->
 <div class="modal" id="emp-modal"><div class="box">
