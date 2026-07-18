@@ -92,9 +92,10 @@ app.patch('/api/leads/:id', (req, res) => {
   const leads = readLeads();
   const idx = leads.findIndex(l => l.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: '未找到' });
-  const { status, notes } = req.body;
+  const { status, notes, assignee } = req.body;
   if (status) leads[idx].status = status;
   if (notes !== undefined) leads[idx].notes = notes;
+  if (assignee !== undefined) leads[idx].assignee = assignee;
   writeLeads(leads);
   res.json(leads[idx]);
 });
