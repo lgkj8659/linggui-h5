@@ -1,0 +1,13 @@
+{
+  "name": "lingui-h5",
+  "version": "2.0.0",
+  "description": "灵龟获客 H5 链路",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.2"
+  }
+}

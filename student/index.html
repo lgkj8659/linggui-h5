@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>灵龟 · 房产IP · 起号能力诊断</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f6fa;color:#1a1a1a}
+.wrap{max-width:480px;margin:0 auto;min-height:100vh;background:#fff;position:relative}
+.scr{display:none}.scr.on{display:block}
+.top{display:flex;justify-content:space-between;align-items:center;padding:14px 18px}
+.top .br{font-weight:700;color:#B8324A;font-size:15px}
+.top .bk{color:#B8324A;font-size:13px;cursor:pointer}
+
+/* welcome */
+.hero{background:linear-gradient(135deg,#5A1020,#B8324A);color:#fff;padding:40px 24px 30px;text-align:center}
+.hero h1{font-size:26px;font-weight:800;margin-bottom:8px}
+.hero p{font-size:14px;opacity:.85;line-height:1.6}
+.hero .v{font-size:13px;color:#ffe082;margin-top:10px}
+.start-btn{display:block;width:calc(100% - 48px);margin:24px auto 0;border:none;border-radius:12px;padding:16px;font-size:17px;font-weight:700;color:#fff;background:#B8324A;cursor:pointer}
+
+/* quiz */
+.qz .pb{padding:14px 20px 10px;font-size:13px;color:#888}
+.qz .bar{height:6px;background:#e8eaef;border-radius:3px;overflow:hidden;margin-top:6px}
+.qz .bar i{display:block;height:100%;background:#B8324A;width:0;transition:width .3s}
+.q-box{padding:0 20px}
+.q-item{padding:18px 0;border-bottom:1px solid #f0f0f0}
+.q-item .idx{font-size:13px;color:#B8324A;font-weight:700;margin-bottom:6px}
+.q-item .qt{font-size:16px;font-weight:600;margin-bottom:14px;line-height:1.5}
+.opt{display:block;width:100%;text-align:left;border:1px solid #e0e0e0;border-radius:10px;padding:13px 14px;margin-bottom:8px;font-size:14px;background:#fff;cursor:pointer}
+.opt.sel{border-color:#B8324A;background:#FDEDF0;font-weight:600}
+.nav{display:flex;gap:10px;padding:14px 20px 24px}
+.nav button{flex:1;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+.nav .prev{background:#f0f0f0;color:#555}
+.nav .next{background:#B8324A;color:#fff}
+
+/* report */
+.rep{padding:0 0 40px}
+.rep-hd{background:linear-gradient(135deg,#5A1020,#B8324A);color:#fff;padding:28px 22px 20px}
+.rep-hd .b{font-size:13px;opacity:.85;margin-bottom:4px}
+.rep-hd h1{font-size:22px;margin-bottom:4px}
+.rep-hd .v{font-size:13px;color:#ffe082}
+.card{background:#fff;margin:14px;border-radius:14px;padding:18px;box-shadow:0 1px 8px rgba(0,0,0,.05)}
+.rr{display:flex;align-items:center;gap:16px}
+.ring{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring-inner{background:#fff;width:84px;height:84px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .s{font-size:34px;font-weight:800;color:#1a1a1a}
+.ring .l{font-size:12px;color:#fff;padding:2px 10px;border-radius:10px;margin-top:2px}
+.rconcl{font-size:14px;color:#555;line-height:1.7;flex:1}
+.sec-t{font-size:17px;font-weight:700;margin:0 0 14px}
+.dm{margin-bottom:14px}
+.dm .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
+.dm .sub2{font-size:11px;color:#aaa}
+.dm .tr{height:12px;background:#eff2f7;border-radius:6px;overflow:hidden}
+.dm .fl{height:100%;border-radius:6px;transition:width .5s}
+.wk-box{background:#fef2f2;border-radius:14px;margin:14px;padding:18px}
+.wk-box .sec-t{color:#DC2626}
+.wi{margin-bottom:14px}
+.wi .wn{font-size:15px;font-weight:700;color:#DC2626}
+.wi .wp{font-size:13px;color:#555;margin:5px 0;line-height:1.5}
+.wi .wf{font-size:13px;color:#B8324A;line-height:1.5}
+.act{font-size:14px;color:#444;margin-bottom:10px;line-height:1.6;padding-left:6px}
+.act::before{content:"•";color:#B8324A;margin-right:8px;font-weight:800}
+
+/* CTA */
+.cta{padding:20px 18px;text-align:center;background:#f8faff;border-radius:14px;margin:14px}
+.cta .ct{font-size:17px;font-weight:700;margin-bottom:4px}
+.cta .cs{font-size:13px;color:#888;margin-bottom:16px}
+.cta .qr{width:160px;height:160px;border-radius:10px;overflow:hidden;margin:0 auto 10px;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center}
+.cta .qr img{width:100%;height:100%;object-fit:cover}
+.cta .qr-cap{font-size:13px;color:#B8324A;font-weight:600;margin-bottom:14px}
+.cta .dv{display:flex;align-items:center;gap:12px;margin:16px 0;color:#bbb;font-size:13px}
+.cta .dv::before,.cta .dv::after{content:"";flex:1;height:1px;background:#e8eaef}
+.ph-row{display:flex;gap:8px}
+.ph-input{flex:1;padding:12px 14px;border:1px solid #ddd;border-radius:10px;font-size:15px;outline:none}
+.ph-input:focus{border-color:#B8324A}
+.ph-btn{padding:12px 20px;border:none;border-radius:10px;background:#B8324A;color:#fff;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap}
+.ph-ok{display:none;color:#2E7D32;font-weight:600;font-size:14px;text-align:center;margin:10px 0 0}
+.ph-ok i{display:inline-block;margin-right:6px}
+.p-footer{text-align:center;padding:14px;font-size:11px;color:#bbb}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <!-- Welcome -->
+  <div class="scr on" id="s-welcome">
+    <div class="top"><span class="br">灵龟咨询</span></div>
+    <div class="hero">
+      <h1>🔥 2分钟突破营收卡点</h1>
+      <p>通过12道专业测评题，精准诊断你的IP起号水平。<br />陈平书老师1对1为你解读，免费获取专属起号方案。</p>
+      <div class="v">价值 998元 · 每天限 5人</div>
+    </div>
+    <button class="start-btn" onclick="startAssess()">开始免费测评 →</button>
+  </div>
+
+  <!-- Quiz -->
+  <div class="scr" id="s-quiz">
+    <div class="top"><span class="br" id="q-title">测评中…</span><span class="bk" onclick="if(confirm('确定退出？'))showScr('s-welcome')">‹ 退出</span></div>
+    <div class="qz">
+      <div class="pb">进度 <span id="q-now">1</span>/<span id="q-total">12</span>
+        <div class="bar"><i id="q-bar"></i></div>
+      </div>
+      <div id="q-box" class="q-box"></div>
+      <div class="nav" id="q-nav"></div>
+    </div>
+  </div>
+
+  <!-- Report -->
+  <div class="scr" id="s-report">
+    <div id="rep-box"></div>
+    <div class="p-footer">灵龟咨询 · 苏州</div>
+  </div>
+</div>
+
+<script src="../content.js"></script>
+<script>
+const C = window.CONTENT.student;
+var S = { answers: {}, result: null };
+
+function showScr(id) {
+  document.querySelectorAll('.scr').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0, 0);
+  var bk = document.querySelector('.top .bk');
+  if (bk) bk.style.display = id === 's-welcome' ? 'none' : 'block';
+}
+
+function startAssess() {
+  S.answers = {};
+  document.getElementById('q-total').textContent = C.questions.length;
+  CI = 0; renderQ(0); showScr('s-quiz');
+}
+
+/* ===================== Quiz ===================== */
+var CI = 0;
+function renderQ(i) {
+  var q = C.questions[i]; CI = i;
+  document.getElementById('q-now').textContent = i + 1;
+  document.getElementById('q-bar').style.width = (i / C.questions.length * 100) + '%';
+  var sel = S.answers[i];
+  var html = '<div class="q-item"><div class="idx">第 ' + (i+1) + ' 题 / 共 ' + C.questions.length + ' 题</div><div class="qt">' + q.q + '</div>';
+  q.opts.forEach(function(o, oi){ html += '<button class="opt' + (sel === oi ? ' sel' : '') + '" onclick="pickOpt(' + i + ',' + oi + ')">' + o.t + '</button>'; });
+  html += '</div>';
+  var nav = '';
+  if (i > 0) nav += '<button class="prev" onclick="goQ(' + (i-1) + ')">上一题</button>';
+  else nav += '<button class="prev" disabled></button>';
+  if (i < C.questions.length - 1) nav += '<button class="next" id="nb" onclick="goQ(' + (i+1) + ')"' + (sel===undefined?' disabled':'') + '>下一题</button>';
+  else nav += '<button class="next" id="nb" onclick="submitQuiz()"' + (sel===undefined?' disabled':'') + '>提交并生成报告</button>';
+  document.getElementById('q-box').innerHTML = html;
+  document.getElementById('q-nav').innerHTML = nav;
+}
+
+function pickOpt(qi, oi) {
+  S.answers[qi] = oi; renderQ(qi);
+  setTimeout(function(){ if (qi < C.questions.length - 1) goQ(qi+1); else submitQuiz(); }, 300);
+}
+function goQ(i) { renderQ(i); }
+
+/* ===================== Scoring ===================== */
+function compute() {
+  var qs = C.questions;
+  var dims = C.dims.map(function(d){
+    var qsInDim = qs.filter(function(q){ return q.dim === d.code; });
+    var sum = 0;
+    qsInDim.forEach(function(q){ var qi = qs.indexOf(q); var oi = S.answers[qi]; if (oi !== undefined) sum += q.opts[oi].s; });
+    var pct = qsInDim.length > 0 ? Math.round(sum / qsInDim.length) : 0;
+    return { code: d.code, name: d.name, sub: d.sub.join(' · '), pct: pct };
+  });
+  var total = dims.length > 0 ? Math.round(dims.reduce(function(a,d){ return a + d.pct; }, 0) / dims.length) : 0;
+  var level = total >= 85 ? '标杆级' : total >= 70 ? '良好' : total >= 55 ? '待提升' : '急需诊断';
+  var weak = dims.filter(function(d){ return d.pct < 60; }).sort(function(a,b){ return a.pct - b.pct; }).slice(0,2);
+  return { total: total, level: level, dims: dims, weakDims: weak };
+}
+
+/* ===================== Submit + Report ===================== */
+function submitQuiz() {
+  S.result = compute();
+  renderReport(S.result);
+  showScr('s-report');
+}
+
+function submitPhone() {
+  var phone = document.getElementById('phone-input').value.trim();
+  if (!phone || !/^1\d{10}$/.test(phone)) { alert('请填写正确的手机号（11位）'); return; }
+  var data = { type: 'student', phone: phone, name: '', answers: S.answers, result: S.result };
+  try { fetch('/api/submit', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) }); } catch(e) {}
+  try {
+    var leads = JSON.parse(localStorage.getItem('lg_leads') || '[]');
+    var now = new Date().toISOString();
+    leads.unshift(Object.assign({}, data, { id: Date.now().toString(36) + Math.random().toString(36).slice(2,8), createdAt: now }));
+    localStorage.setItem('lg_leads', JSON.stringify(leads));
+  } catch(e) {}
+  document.getElementById('phone-row').style.display = 'none';
+  document.getElementById('phone-ok').style.display = 'block';
+}
+
+function renderReport(r) {
+  var th = C.theme;
+  var weakNames = r.weakDims.map(function(d){ return d.name; }).join('、') || '无明显短板';
+  var dimsHtml = r.dims.map(function(d){
+    var c = d.pct < 50 ? '#DC2626' : d.pct < 70 ? '#FB8C00' : th.color;
+    return '<div class="dm"><div class="lb"><span>' + d.code + ' ' + d.name + '</span><span style="color:' + c + ';font-weight:700">' + d.pct + '分</span></div><div class="sub2">' + d.sub + '</div><div class="tr"><div class="fl" style="width:' + d.pct + '%;background:' + c + '"></div></div></div>';
+  }).join('');
+  var weakHtml = '';
+  r.weakDims.forEach(function(d, i){
+    var wc = C.weakCopy[d.code]; if (!wc) return;
+    weakHtml += '<div class="wi"><div class="wn">0' + (i+1) + '. ' + d.name + '（' + d.pct + '分）</div><div class="wp">问题点：' + wc.weak + '</div><div class="wf">建议：' + wc.fix + '</div></div>';
+  });
+  if (!weakHtml) weakHtml = '<div style="font-size:14px;color:#888">暂无明显短板，保持即可</div>';
+  var actsHtml = C.actions.map(function(a){ return '<div class="act">' + a + '</div>'; }).join('');
+  var ctaHtml = '<div class="cta"><div class="ct">想获取你的专属【房产IP起号方案】？</div>'
+    + '<div class="cs">陈平书老师1对1为你解读报告，免费出方案</div>'
+    + '<div class="qr"><img src="../qrcode.png" alt="扫码添加微信" onerror="this.outerHTML=\'<div style=font-size:12px;color:#aaa;padding:20px>请替换 wechat-qr.png</div>\'" /></div><div class="qr-cap">💼 扫码添加企业微信</div>'
+    + '<div class="dv"><span>或</span></div>'
+    + '<div class="ph-row" id="phone-row"><input class="ph-input" id="phone-input" placeholder="留下手机号，陈老师联系你" maxlength="11" /><button class="ph-btn" onclick="submitPhone()">提交</button></div>'
+    + '<div class="ph-ok" id="phone-ok"><i>✅</i>已收到！陈老师会尽快联系你</div></div>';
+  document.getElementById('rep-box').innerHTML = ''
+    + '<div class="rep">'
+    + '<div class="rep-hd"><div class="b">' + C.brand + '</div><h1>' + C.reportTitle + '</h1><div class="v">' + C.value + '</div></div>'
+    + '<div class="card"><div class="rr"><div class="ring" style="background:conic-gradient(' + th.color + ' ' + (r.total*3.6) + 'deg,#e8eaef 0)"><div class="ring-inner"><div class="s">' + r.total + '</div><div class="l" style="background:' + th.color + '">' + r.level + '</div></div></div><div class="rconcl">你的诊断结论：<br>整体处于【' + r.level + '】水平，综合得分 ' + r.total + '。<br>短板：<b style="color:#DC2626">' + weakNames + '</b></div></div></div>'
+    + '<div class="card"><div class="sec-t">六大维度评分</div>' + dimsHtml + '</div>'
+    + '<div class="wk-box"><div class="sec-t">核心短板 &amp; 解决建议</div>' + weakHtml + '</div>'
+    + '<div class="card"><div class="sec-t">下一步行动</div>' + actsHtml + '</div>'
+    + ctaHtml
+    + '</div>';
+}
+</script>
+</body>
+</html>

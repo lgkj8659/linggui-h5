@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>灵龟测评 · 线索管理后台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f5f6fa;color:#1a1a1a;font-size:14px}
+.top{background:linear-gradient(135deg,#0B2A5B,#1E5BB8);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.top h1{font-size:17px}
+.top .sub{font-size:12px;opacity:.7}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.stat{border-radius:10px;padding:14px 16px;color:#fff;text-align:center}
+.stat .n{font-size:28px;font-weight:800}
+.stat .l{font-size:12px;opacity:.85;margin-top:2px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.bar input{padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;flex:1;min-width:140px}
+.bar select{padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff}
+.bar button{padding:8px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}
+.btn-p{background:#1E5BB8;color:#fff}
+.btn-s{background:#f0f0f0;color:#555}
+.btn-d{background:#DC2626;color:#fff}
+.bar .cnt{font-size:13px;color:#888;margin-left:auto}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+th,td{padding:10px;text-align:left;font-size:13px;border-bottom:1px solid #f0f0f0}
+th{background:#fafbfc;color:#666;font-weight:600;white-space:nowrap}
+tr:hover{background:#f7f9ff}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.tag.b{background:#E8F0FE;color:#1E5BB8}
+.tag.s{background:#FDEDF0;color:#B8324A}
+.lv{background:#FFF3E0;color:#E65100}
+.st-new{background:#E8F0FE;color:#1E5BB8}
+.st-contacted{background:#FFF3E0;color:#E65100}
+.st-converted{background:#E8F5E9;color:#2E7D32}
+.st-closed{background:#f0f0f0;color:#888}
+.link{color:#1E5BB8;cursor:pointer;text-decoration:underline;font-size:12px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;padding:20px 12px;overflow:auto;z-index:100}
+.modal.show{display:flex}
+.modal .box{background:#fff;border-radius:14px;max-width:600px;width:100%;padding:20px;margin:auto}
+.modal .x{float:right;cursor:pointer;font-size:20px;color:#aaa}
+.modal h2{font-size:17px;margin:0 0 12px}
+.row{font-size:14px;margin:5px 0;line-height:1.6}
+.dm-line{margin:4px 0;font-size:13px}
+.dm-bar{height:8px;background:#eff2f7;border-radius:4px;overflow:hidden;margin-top:2px}
+.dm-bar .fl{height:100%;border-radius:4px}
+.sel-st{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.sel-st button{padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px}
+.sel-st button.cur{background:#1E5BB8;color:#fff;border-color:#1E5BB8}
+.notes{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:vertical;min-height:60px;margin:8px 0}
+.login-box{max-width:360px;margin:80px auto;background:#fff;border-radius:14px;padding:26px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.login-box h2{margin:0 0 14px;font-size:18px}
+.login-box input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px;margin-bottom:12px}
+.login-box button{width:100%;padding:12px;border:none;border-radius:8px;background:#1E5BB8;color:#fff;font-weight:700;cursor:pointer;font-size:15px}
+.err{color:#DC2626;font-size:13px;margin-bottom:10px}
+.info{background:#E8F0FE;padding:10px 14px;border-radius:10px;font-size:12px;color:#1E5BB8;margin-bottom:12px}
+.empty{text-align:center;padding:40px;color:#aaa;font-size:14px}
+.action{padding:6px 10px;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px}
+.badge{color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.na{color:#aaa;font-style:italic}
+</style>
+</head>
+<body>
+<div id="login" class="login-box">
+  <h2>🔐 灵龟 · 线索管理后台</h2>
+  <div class="err" id="lerr"></div>
+  <input id="pw" placeholder="请输入后台口令" type="password" onkeydown="if(event.key==='Enter')enter()" />
+  <button onclick="enter()">进入后台</button>
+</div>
+<div id="main" style="display:none">
+  <div class="top"><h1>🐢 灵龟测评 · 线索管理</h1><span class="sub" id="who"></span></div>
+  <div class="wrap">
+    <div class="stats" id="stats"></div>
+    <div class="info" id="mode-info">📌 正在连接服务器…</div>
+    <div class="bar">
+      <input id="kw" placeholder="搜索姓名/微信号" />
+      <select id="f-type"><option value="">全部类型</option><option value="buyer">买房客户</option><option value="student">自媒体学员</option></select>
+      <select id="f-st"><option value="">全部状态</option><option value="new">新线索</option><option value="contacted">已联系</option><option value="converted">已转化</option><option value="closed">已关闭</option></select>
+      <button class="btn-p" onclick="load()">🔍 查询</button>
+      <button class="btn-s" onclick="exportCSV()">📥 导出</button>
+      <button class="btn-d" onclick="clearData()">🗑 清空</button>
+      <span class="cnt" id="cnt"></span>
+    </div>
+    <table><thead><tr><th>时间</th><th>类型</th><th>姓名</th><th>联系方式</th><th>综合分</th><th>等级</th><th>状态</th><th>操作</th></tr></thead><tbody id="tb"></tbody></table>
+    <div id="empty-state" class="empty" style="display:none"><div style="font-size:40px;margin-bottom:8px">📋</div><div>暂无线索数据</div><div style="font-size:12px;margin-top:6px">去 <a href="../buyer/" target="_blank">买家版</a> 或 <a href="../student/" target="_blank">学员版</a> 完成测评，数据会自动同步到这里</div></div>
+  </div>
+</div>
+<div class="modal" id="modal"><div class="box">
+  <span class="x" onclick="closeModal()">✕</span>
+  <h2 id="m-title"></h2>
+  <div id="m-body"></div>
+</div></div>
+<script>
+var DATA = { server: false, token: '' };
+var ALL = [];
+
+function enter() {
+  var pw = document.getElementById('pw').value.trim();
+  if (pw !== 'lingui_admin_2026') { document.getElementById('lerr').textContent = '口令错误'; return; }
+  DATA.token = pw;
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+  checkServer();
+}
+function checkServer() {
+  var info = document.getElementById('mode-info');
+  fetch('/api/leads?token=' + DATA.token).then(function(r){
+    if (r.ok) { DATA.server = true; info.innerHTML = '📡 <b>服务端模式</b>：数据存储于服务器，可从任意设备访问。'; load(); }
+    else { throw Error(); }
+  }).catch(function(){
+    DATA.server = false; info.innerHTML = '💻 <b>本地模式</b>：数据存储于浏览器 (localStorage)，仅供本机查看。部署后端后可切换到服务端模式。';
+    load();
+  });
+}
+function load() {
+  var kw = document.getElementById('kw').value.trim();
+  var type = document.getElementById('f-type').value;
+  var st = document.getElementById('f-st').value;
+  if (DATA.server) {
+    var url = '/api/leads?token=' + DATA.token;
+    if (type) url += '&type=' + type;
+    if (st) url += '&status=' + st;
+    if (kw) url += '&kw=' + encodeURIComponent(kw);
+    fetch(url).then(function(r){ return r.json(); }).then(function(d){
+      ALL = d.leads || []; renderTable();
+    }).catch(function(){ DATA.server = false; load(); });
+  } else {
+    var leads = JSON.parse(localStorage.getItem('lg_leads') || '[]');
+    if (type) leads = leads.filter(function(l){ return l.type === type; });
+    if (st) leads = leads.filter(function(l){ return (l.status||'new') === st; });
+    if (kw) { var q = kw.toLowerCase(); leads = leads.filter(function(l){ return (l.name||'').toLowerCase().indexOf(q)>=0||(l.wechat||'').toLowerCase().indexOf(q)>=0; }); }
+    ALL = leads; renderTable();
+  }
+}
+function renderTable() {
+  var leads = ALL;
+  var cnt = document.getElementById('cnt'); cnt.textContent = '共 ' + leads.length + ' 条';
+  var tb = document.getElementById('tb');
+  var empty = document.getElementById('empty-state');
+  if (leads.length === 0) { tb.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  // Stats
+  var total = leads.length, buyers = leads.filter(function(l){return l.type==='buyer';}).length;
+  var students = total - buyers;
+  var newCount = leads.filter(function(l){return (l.status||'new')==='new';}).length;
+  var high = leads.filter(function(l){return (l.result&&l.result.total>=70)||l.total>=70;}).length;
+  document.getElementById('stats').innerHTML = ''
+    + '<div class="stat" style="background:#1E5BB8"><div class="n">' + total + '</div><div class="l">总线索</div></div>'
+    + '<div class="stat" style="background:#B8324A"><div class="n">' + students + '</div><div class="l">自媒体学员</div></div>'
+    + '<div class="stat" style="background:#0B2A5B"><div class="n">' + buyers + '</div><div class="l">买房客户</div></div>'
+    + '<div class="stat" style="background:#E65100"><div class="n">' + newCount + '</div><div class="l">待联系</div></div>'
+    + '<div class="stat" style="background:#2E7D32"><div class="n">' + high + '</div><div class="l">高分(≥70)</div></div>';
+  tb.innerHTML = leads.map(function(l, i){
+    var time = l.createdAt ? new Date(l.createdAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '-';
+    var type = l.type === 'buyer' ? '买房客户' : '自媒体学员', tc = l.type === 'buyer' ? 'b' : 's';
+    var total = (l.result && l.result.total) || l.total || '-';
+    var level = (l.result && l.result.level) || l.level || '-';
+    var st = l.status || 'new';
+    var stNames = { new:'新线索', contacted:'已联系', converted:'已转化', closed:'已关闭' };
+    return '<tr><td style="font-size:12px;color:#888;white-space:nowrap">' + time + '</td>'
+      + '<td><span class="tag ' + tc + '">' + type + '</span></td>'
+      + '<td><b>' + (l.name||'<span class="na">匿名</span>') + '</b></td>'
+      + '<td>' + (l.phone||l.wechat||'<span class="na">-</span>') + '</td>'
+      + '<td><b>' + total + '</b></td>'
+      + '<td><span class="tag lv">' + level + '</span></td>'
+      + '<td><span class="tag st-' + st + '">' + (stNames[st]||st) + '</span></td>'
+      + '<td><span class="link" onclick="detail(' + i + ')">查看</span></td></tr>';
+  }).join('');
+}
+function detail(idx) {
+  var l = ALL[idx]; if (!l) return;
+  var r = l.result || {};
+  var dims = (r.dims || []).map(function(d){
+    var c = d.pct < 50 ? '#DC2626' : d.pct < 70 ? '#FB8C00' : '#1E5BB8';
+    return '<div class="dm-line">' + d.code + ' ' + d.name + '：<b style="color:' + c + '">' + d.pct + '分</b><div class="dm-bar"><div class="fl" style="width:' + d.pct + '%;background:' + c + '"></div></div></div>';
+  }).join('');
+  var weak = (r.weakDims || []).map(function(w){ return '<div>• ' + w.name + '（' + w.pct + '分）</div>'; }).join('') || '无明显短板';
+  var st = l.status || 'new';
+  var stBtns = ['new','contacted','converted','closed'].map(function(s){
+    var names = { new:'新线索', contacted:'已联系', converted:'已转化', closed:'已关闭' };
+    return '<button class="' + (s===st?'cur':'') + '" onclick="updateStatus(\'' + l.id + '\',\'' + s + '\')">' + names[s] + '</button>';
+  }).join('');
+  document.getElementById('m-title').textContent = (l.name||'匿名') + ' 的' + (l.type==='buyer'?'买房客户':'自媒体学员') + '详情';
+  document.getElementById('m-body').innerHTML = ''
+    + '<div class="row"><b>姓名：</b>' + (l.name||'-') + '　<b>手机号：</b>' + (l.phone||'-') + '　<b>微信号：</b>' + (l.wechat||'-') + '</div>'
+    + '<div class="row"><b>综合分：</b>' + (r.total||'-') + '　<b>等级：</b>' + (r.level||'-') + '　<b>提交时间：</b>' + (l.createdAt?new Date(l.createdAt).toLocaleString('zh-CN'):'-') + '</div>'
+    + '<hr style="margin:10px 0;border:none;border-top:1px solid #eee" />';
+  if (dims) { document.getElementById('m-body').innerHTML += '<div style="font-weight:700;margin:8px 0">六大维度评分</div>' + dims
+    + '<div style="font-weight:700;margin:10px 0 4px;color:#DC2626">核心短板</div>' + weak; }
+  document.getElementById('m-body').innerHTML += ''
+    + '<hr style="margin:10px 0;border:none;border-top:1px solid #eee" />'
+    + '<div style="font-weight:700;margin:8px 0">状态管理</div>'
+    + '<div class="sel-st">' + stBtns + '</div>'
+    + '<textarea class="notes" id="l-notes" placeholder="跟进备注（仅后台可见）">' + (l.notes||'') + '</textarea>'
+    + '<button class="btn-p" style="padding:8px 14px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" onclick="saveNotes(\'' + l.id + '\')">保存备注</button>';
+  document.getElementById('modal').classList.add('show');
+}
+function updateStatus(id, status) {
+  if (DATA.server) {
+    fetch('/api/leads/' + id + '?token=' + DATA.token, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({status:status}) })
+    .then(function(){ load(); detail(ALL.findIndex(function(l){return l.id===id;})); }).catch(function(){});
+  } else {
+    var leads = JSON.parse(localStorage.getItem('lg_leads') || '[]');
+    var idx = leads.findIndex(function(l){ return l.id === id; });
+    if (idx >= 0) { leads[idx].status = status; localStorage.setItem('lg_leads', JSON.stringify(leads)); }
+    ALL = leads.filter(function(l){ /* re-apply filters */ return true; });
+    load();
+    var newIdx = ALL.findIndex(function(l){ return l.id === id; });
+    if (newIdx >= 0) detail(newIdx); else closeModal();
+  }
+}
+function saveNotes(id) {
+  var notes = document.getElementById('l-notes').value;
+  if (DATA.server) {
+    fetch('/api/leads/' + id + '?token=' + DATA.token, { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({notes:notes}) }).catch(function(){});
+  } else {
+    var leads = JSON.parse(localStorage.getItem('lg_leads') || '[]');
+    var idx = leads.findIndex(function(l){ return l.id === id; });
+    if (idx >= 0) { leads[idx].notes = notes; localStorage.setItem('lg_leads', JSON.stringify(leads)); }
+  }
+  alert('备注已保存');
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+function exportCSV() {
+  if (ALL.length === 0) { alert('暂无数据可导出'); return; }
+  var h = '时间,类型,姓名,手机号,微信号,综合分,等级,状态\n';
+  var rows = ALL.map(function(l){
+    return (l.createdAt||'') + ',' + (l.type==='buyer'?'买房客户':'自媒体学员') + ',' + (l.name||'') + ',' + (l.phone||'') + ',' + (l.wechat||'') + ',' + ((l.result&&l.result.total)||l.total||'') + ',' + ((l.result&&l.result.level)||l.level||'') + ',' + (l.status||'new');
+  }).join('\n');
+  var blob = new Blob(['\ufeff' + h + rows], {type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '灵龟线索_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function clearData() {
+  if (!confirm('确定清空所有数据？不可恢复。')) return;
+  if (DATA.server) { /* server-side clear not implemented */ }
+  localStorage.removeItem('lg_leads');
+  load();
+}
+</script>
+</body>
+</html>
