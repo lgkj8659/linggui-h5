@@ -218,6 +218,65 @@ app.post('/api/employee/logout', (req, res) => {
   if (!token) return res.json({ success: true });
   const emps = readEmployees();
   const emp = emps.find(e => e.token === token);
-  if (emp) { delete emp.token; writeEmployees(emps); }
-  res.json({ success: true });
+ if (emp) { delete emp.token; writeEmployees(emps); }
+ res.json({ success: true });
+});
+/* ===================== 客户需求管理 + AI 辅助 ===================== */
+app.patch('/api/leads/:id/requirements', (req, res) => {
+  const { token } = req.query;
+  const { requirements } = req.body;
+  if (!token) return res.status(401).json({ error: '未登录' });
+  let updater = '';
+  const emps = readEmployees();
+  const emp = emps.find(e => e.token === token);
+  if (emp) {
+    const leads = readLeads();
+    const lead = leads.find(l => l.id === req.params.id);
+    if (!lead) return res.status(404).json({ error: '未找到' });
+    if (lead.assignee !== emp.name) return res.status(403).json({ error: '无权操作此客户' });
+    updater = emp.name;
+  } else if (token === 'lingui_admin_2026') { updater = '管理员'; }
+  else { return res.status(401).json({ error: '无权操作' }); }
+  const leads = readLeads();
+  const idx = leads.findIndex(l => l.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '未找到' });
+  const old = leads[idx].requirements || {};
+  if (!leads[idx].requirementHistory) leads[idx].requirementHistory = [];
+  if (JSON.stringify(old) !== JSON.stringify(requirements)) {
+    leads[idx].requirementHistory.push({ before: old, after: requirements, at: new Date().toISOString(), by: updater });
+    if (!leads[idx].events) leads[idx].events = [];
+    const cs = [];
+    if (old.budget !== requirements.budget) cs.push('预算:'+(old.budget||'未填')+'→'+(requirements.budget||'未填'));
+    if (old.area !== requirements.area) cs.push('面积:'+(old.area||'未填')+'→'+(requirements.area||'未填'));
+    if (old.location !== requirements.location) cs.push('位置:'+(old.location||'未填')+'→'+(requirements.location||'未填'));
+    if (cs.length > 0) leads[idx].events.push({ type:'requirement', value:'需求变更: '+cs.join(', ')+' (by '+updater+')', at:new Date().toISOString() });
+  }
+  leads[idx].requirements = requirements;
+  writeLeads(leads);
+  res.json(leads[idx]);
+});
+app.get('/api/leads/:id/ai-suggest', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(401).json({ error: '未登录' });
+  const leads = readLeads();
+  const lead = leads.find(l => l.id === req.params.id);
+  if (!lead) return res.status(404).json({ error: '未找到' });
+  const reqs = lead.requirements || {};
+  const hist = lead.requirementHistory || [];
+  const last = hist.length > 0 ? hist[hist.length-1] : null;
+  const sug = [];
+  if (last && last.before && last.after) {
+    const b = last.before, a = last.after;
+    if (a.budget && b.budget && a.budget !== b.budget) {
+      const diff = parseInt(a.budget)-parseInt(b.budget);
+      if (diff > 0) sug.push('💰 预算提升'+diff+'万→购买力增强，可推荐更高品质房源');
+      else sug.push('💰 预算减少'+Math.abs(diff)+'万→关注资金状况，调整推荐策略');
+    }
+    if (a.area && b.area && a.area !== b.area) sug.push('🏠 面积需求从'+b.area+'变为'+a.area+'→重新匹配对应户型');
+    if (a.location && b.location && a.location !== b.location) sug.push('📍 关注区域从"'+b.location+'"变为"'+a.location+'"→重新推荐板块房源');
+  }
+  if (!reqs.budget && !reqs.area && !reqs.location) sug.push('📝 尚未记录客户需求信息，建议先了解预算、面积、位置等基础需求');
+  if (sug.length === 0 && last) sug.push('✅ 需求暂无新变更，保持现有跟进节奏即可');
+  if (sug.length === 0) sug.push('📝 暂无需求信息，建议先了解客户需求再使用AI分析');
+  res.json({ suggestions: sug });
 });
