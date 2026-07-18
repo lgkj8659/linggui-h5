@@ -94,12 +94,13 @@ app.patch('/api/leads/:id', (req, res) => {
   const idx = leads.findIndex(l => l.id === req.params.id);
   if (idx === -1) return res.status(404).json({ error: '未找到' });
   const { status, notes, assignee } = req.body;
- if (status) leads[idx].status = status;
- if (notes !== undefined) leads[idx].notes = notes;
- if (assignee !== undefined) leads[idx].assignee = assignee;
+  const oldStatus = leads[idx].status;
+  if (status) leads[idx].status = status;
+  if (notes !== undefined) leads[idx].notes = notes;
+  if (assignee !== undefined) leads[idx].assignee = assignee;
   const now = new Date().toISOString();
   if (!leads[idx].events) leads[idx].events = [];
-  if (status && leads[idx].status !== leads[idx]._oldStatus) leads[idx].events.push({ type:'status', value:status, at:now });
+  if (status && status !== oldStatus) leads[idx].events.push({ type:'status', value:status, at:now });
   if (notes !== undefined && notes) leads[idx].events.push({ type:'note', value:notes, at:now });
   if (assignee !== undefined) leads[idx].events.push({ type:'assign', value:assignee||'未分配', at:now });
   writeLeads(leads);
