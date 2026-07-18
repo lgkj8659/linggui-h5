@@ -68,6 +68,7 @@ body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f5f6fa;color
 .mod .nb:disabled{opacity:.5}
 .empt{text-align:center;padding:40px;color:#aaa;font-size:14px}
 .empt .i{font-size:48px;margin-bottom:8px}
+/* requirements + AI */
 .req-row{display:flex;gap:6px;margin-bottom:6px}.req-row input{flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none}.req-row input:focus{border-color:#1E5BB8}.rs{padding:8px 14px;border:none;border-radius:6px;background:#1E5BB8;color:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}.ai-btn{width:100%;padding:10px;border:1px solid #1E5BB8;border-radius:8px;background:#E8F0FE;color:#1E5BB8;font-size:13px;font-weight:600;cursor:pointer;margin:8px 0}.ai-res{font-size:13px;color:#555;margin:6px 0;line-height:1.7;display:none}.ai-res .it{padding:8px 10px;background:#f9f9f9;border-radius:6px;margin:4px 0}
 </style>
 </head>
@@ -174,9 +175,7 @@ function openDetail(id) {
     + '<div class="rw"><b>类型：</b>'+(l.type==='buyer'?'买房客户':'自媒体学员')+'　<b>综合分：</b>'+((r.total||l.total)||'-')+'　<b>等级：</b>'+((r.level||l.level)||'-')+'</div>'
     + '<div class="rw"><b>联系方式：</b>'+(l.phone||l.wechat||'-')+'　<b>提交：</b>'+(l.createdAt?new Date(l.createdAt).toLocaleString('zh-CN'):'-')+'</div>'
     + (dims ? '<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">六大维度评分</div>'+dims : '')
-    + '<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">⚡ 客户需求信息</div><div class="req-row"><input id="req-b" value="\'+(l.requirements&&l.requirements.budget||\'\')+\'" placeholder="预算（如：500万）" /><input id="req-a" value="\'+(l.requirements&&l.requirements.area||\'\')+\'" placeholder="面积（如：200平）" /></div><div class="req-row"><input id="req-l" value="\'+(l.requirements&&l.requirements.location||\'\')+\'" placeholder="位置（如：吴中区）" /><button class="rs" onclick="saveReq(\'\'+l.id+\'\')">保存需求</button></div>\'
-    + (l.requirementHistory&&l.requirementHistory.length>0?\'<div style="font-size:12px;color:#888;margin-bottom:6px"><b>📜 变更记录：</b>\'+l.requirementHistory.slice().reverse().map(function(h){var t=new Date(h.at);var ts=(\'0\'+(t.getMonth()+1)).slice(-2)+\'/\'+(\'0\'+t.getDate()).slice(-2)+\' \'+(\'0\'+t.getHours()).slice(-2)+\':\'+(\'0\'+t.getMinutes()).slice(-2);var tx=\'\'+ts+\' \'+h.by+\'\';if(h.before&&h.after){if(h.before.budget!==h.after.budget)tx+=+h.before.budget+\'→\'+h.after.budget;if(h.before.area!==h.after.area)tx+=\' \'+h.before.area+\'→\'+h.after.area;if(h.before.location!==h.after.location)tx+=\' \'+h.before.location+\'→\'+h.after.location;}return \'<div style="margin:3px 0;font-size:12px">\'+tx+\'</div>\';}).join(\'\')+\'</div>\':\'\')
-    + '<button class="ai-btn" onclick="getAISug(''+l.id+'')">🤖 AI 分析建议</button><div class="ai-res" id="ai-res"></div>'
+    + renderRequirements(l)
     + '<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">跟进备注</div>'
     + '<div style="font-size:13px;color:#555;background:#f9f9f9;padding:10px;border-radius:8px;margin-bottom:8px;line-height:1.6">'+notes+'</div>'
     + '<textarea class="nk" id="nk" placeholder="输入跟进内容…"></textarea>'
@@ -208,20 +207,35 @@ function doLogout() {
   document.getElementById('lerr').style.display = 'none';
   show('s-login');
 }
-
 function saveReq(id) {
-  var b=document.getElementById("req-b").value.trim();var a=document.getElementById("req-a").value.trim();var l=document.getElementById("req-l").value.trim();
-  fetch("/api/leads/"+id+"/requirements?token="+TOKEN,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({requirements:{budget:b,area:a,location:l}})})
-  .then(function(r){return r.json();}).then(function(d){if(d.error){alert(d.error);return;}loadLeads();var ld=LEADS.find(function(x){return x.id===id;});if(ld)openDetail(id);}).catch(function(){alert("保存失败");});
+  var b=document.getElementById('req-b').value.trim(),a=document.getElementById('req-a').value.trim(),l=document.getElementById('req-l').value.trim();
+  fetch('/api/leads/'+id+'/requirements?token='+TOKEN,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({requirements:{budget:b,area:a,location:l}})})
+  .then(function(r){return r.json();}).then(function(d){if(d.error){alert(d.error);return;}loadLeads();var ld=LEADS.find(function(x){return x.id===id;});if(ld)openDetail(id);}).catch(function(){alert('保存失败');});
 }
 function getAISug(id) {
-  var el=document.getElementById("ai-res");el.innerHTML="<div style=\"text-align:center;color:#888;padding:10px\">分析中…</div>";el.style.display="block";
-  fetch("/api/leads/"+id+"/ai-suggest?token="+TOKEN).then(function(r){return r.json();}).then(function(d){
-    if(d.error){el.innerHTML=d.error;return;}
-    el.innerHTML=(d.suggestions||[]).map(function(s){return "<div class=\"it\">"+s+"</div>";}).join("");
-  }).catch(function(){el.innerHTML="<div style=\"color:#DC2626\">分析失败</div>";});
+  var el=document.getElementById('ai-res');el.innerHTML='<div style="text-align:center;color:#888;padding:10px">分析中…</div>';el.style.display='block';
+  fetch('/api/leads/'+id+'/ai-suggest?token='+TOKEN).then(function(r){return r.json();}).then(function(d){if(d.error){el.innerHTML=d.error;return;}el.innerHTML=(d.suggestions||[]).map(function(s){return '<div class="it">'+s+'</div>';}).join('');}).catch(function(){el.innerHTML='<div style="color:#DC2626">分析失败</div>';});
 }
 
+function renderRequirements(l) {
+  var r=l.requirements||{},h=l.requirementHistory||[],t='<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">⚡ 客户需求信息</div><div class="req-row"><input id="req-b" value="'+(r.budget||'')+'" placeholder="预算（如：500万）" /><input id="req-a" value="'+(r.area||'')+'" placeholder="面积（如：200平）" /></div><div class="req-row"><input id="req-l" value="'+(r.location||'')+'" placeholder="位置（如：吴中区）" /><button class="rs" onclick="saveReq(\''+l.id+'\')">保存需求</button></div>';
+  if (h.length > 0) {
+    t += '<div style="font-size:12px;color:#888;margin-bottom:6px"><b>📜 变更记录：</b>';
+    h.slice().reverse().forEach(function(e){
+      var d = new Date(e.at);
+      t += '<div style="margin:3px 0">['+e.by+' '+(d.getMonth()+1)+'/'+d.getDate()+' '+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes()+']';
+      if (e.before && e.after) {
+        if (e.before.budget !== e.after.budget) t += ' 预算'+e.before.budget+'→'+e.after.budget;
+        if (e.before.area !== e.after.area) t += ' 面积'+e.before.area+'→'+e.after.area;
+        if (e.before.location !== e.after.location) t += ' 位置'+e.before.location+'→'+e.after.location;
+      }
+      t += '</div>';
+    });
+    t += '</div>';
+  }
+  t += '<button class="ai-btn" onclick="getAISug(\''+l.id+'\')">AI 分析建议</button><div class="ai-res" id="ai-res"></div>';
+  return t;
+}
 </script>
 </body>
 </html>
