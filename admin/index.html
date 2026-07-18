@@ -255,58 +255,15 @@ function clearData() {
   localStorage.removeItem('lg_leads');
   load();
 }
-</script>
-<!-- 员工管理 -->
-<div class="modal" id="emp-modal"><div class="box">
-  <span class="x" onclick="closeEmpModal()">✕</span>
-  <h2>👥 员工管理</h2>
-  <div id="emp-list"></div>
-  <hr style="margin:12px 0;border:none;border-top:1px solid #eee" />
-  <div style="display:flex;gap:8px"><input id="emp-name" placeholder="员工姓名" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /><input id="emp-phone" placeholder="手机号(选填)" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /><button onclick="addEmployee()" style="padding:10px 16px;border:none;border-radius:8px;background:#1E5BB8;color:#fff;font-weight:600;cursor:pointer;white-space:nowrap">添加</button></div>
-</div></div>
-</body>
-</html>
-</body>
-</html>
-</body>
-</html>
-function loadEmployees() {
-  if (!DATA.token) return;
-  if (DATA.server) {
-    fetch('/api/employees?token=' + DATA.token).then(function(r){ return r.json(); }).then(function(d){ EMPLOYEES = d.employees || []; }).catch(function(){ EMPLOYEES = []; });
-  }
-}
-function manageEmployees() {
-  var list = (EMPLOYEES||[]).map(function(e){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0"><span><b>' + e.name + '</b>' + (e.phone?" ("+e.phone+")":"") + '</span><button onclick="deleteEmployee(\'' + e.id + '\')" style="padding:4px 10px;border:none;border-radius:6px;background:#DC2626;color:#fff;font-size:12px;cursor:pointer">删除</button></div>'; }).join('') || '<div style="color:#888;text-align:center;padding:20px">暂无员工</div>';
-  document.getElementById('emp-list').innerHTML = list;
-  document.getElementById('emp-modal').classList.add('show');
-}
-function closeEmpModal() { document.getElementById('emp-modal').classList.remove('show'); }
-function addEmployee() {
-  var name = document.getElementById('emp-name').value.trim(); if (!name) { alert('请填写员工姓名'); return; }
-  var phone = document.getElementById('emp-phone').value.trim();
-  if (DATA.server) {
-    fetch('/api/employees?token=' + DATA.token, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name,phone:phone}) }).then(function(){ document.getElementById('emp-name').value=''; document.getElementById('emp-phone').value=''; loadEmployees(); }).catch(function(){});
-    document.getElementById('emp-list').innerHTML = '<div style="text-align:center;padding:20px;color:#888">已提交，刷新列表…</div>'; setTimeout(manageEmployees, 1000);
-  }
-}
-function deleteEmployee(id) {
-  if (!confirm('确定删除该员工？')) return;
-  if (DATA.server) { fetch('/api/employees/' + id + '?token=' + DATA.token, { method:'DELETE' }).then(function(){ loadEmployees(); manageEmployees(); }).catch(function(){}); }
-}
-function updateAssignee(id) {
-  var a = document.getElementById('assign-select').value;
-  if (DATA.server) { fetch('/api/leads/' + id + '?token=' + DATA.token, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({assignee:a}) }).catch(function(){}); }
-}
-}
 
 function loadEmployees() {
   if (!DATA.token) return;
   if (DATA.server) { fetch('/api/employees?token='+DATA.token).then(function(r){return r.json();}).then(function(d){EMPLOYEES=d.employees||[];}).catch(function(){EMPLOYEES=[];}); }
 }
 function manageEmployees() {
-  var list = (EMPLOYEES||[]).map(function(e){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0"><span><b>'+e.name+'</b>'+(e.phone?' ('+e.phone+')':'')+'</span><button onclick="deleteEmployee(''+e.id+'')" style="padding:4px 10px;border:none;border-radius:6px;background:#DC2626;color:#fff;font-size:12px;cursor:pointer">删除</button></div>';}).join('')||'<div style="color:#888;text-align:center;padding:20px">暂无员工</div>';
-  document.getElementById('emp-list').innerHTML=list; document.getElementById('emp-modal').classList.add('show');
+  var list = (EMPLOYEES||[]).map(function(e){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0"><span><b>'+e.name+'</b>'+(e.phone?' ('+e.phone+')':'')+'</span><button onclick="deleteEmployee(\''+e.id+'\')" style="padding:4px 10px;border:none;border-radius:6px;background:#DC2626;color:#fff;font-size:12px;cursor:pointer">删除</button></div>';}).join('')||'<div style="color:#888;text-align:center;padding:20px">暂无员工</div>';
+  document.getElementById('emp-list').innerHTML=list;
+  document.getElementById('emp-modal').classList.add('show');
 }
 function closeEmpModal(){document.getElementById('emp-modal').classList.remove('show');}
 function addEmployee(){
