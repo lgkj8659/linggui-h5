@@ -124,3 +124,42 @@ app.listen(PORT, () => {
   console.log(`  Admin:  http://localhost:${PORT}/admin/`);
   console.log(`──────────────────────`);
 });
+
+/* ===================== 员工管理 API ===================== */
+const EMPLOYEES_FILE = path.join(DATA_DIR, 'employees.json');
+function readEmployees() {
+  ensureDataDir();
+  try { return JSON.parse(fs.readFileSync(EMPLOYEES_FILE, 'utf-8')); }
+  catch { return []; }
+}
+function writeEmployees(emps) {
+  ensureDataDir();
+  fs.writeFileSync(EMPLOYEES_FILE, JSON.stringify(emps, null, 2), 'utf-8');
+}
+
+app.get('/api/employees', (req, res) => {
+  const { token } = req.query;
+  if (token !== 'lingui_admin_2026') return res.status(401).json({ error: '口令错误' });
+  res.json({ employees: readEmployees() });
+});
+
+app.post('/api/employees', (req, res) => {
+  const { token } = req.query;
+  if (token !== 'lingui_admin_2026') return res.status(401).json({ error: '口令错误' });
+  const { name, phone } = req.body;
+  if (!name) return res.status(400).json({ error: '请填写员工姓名' });
+  const emps = readEmployees();
+  const emp = { id: 'emp_' + Date.now().toString(36), name: name.trim(), phone: (phone || '').trim(), createdAt: new Date().toISOString() };
+  emps.push(emp);
+  writeEmployees(emps);
+  res.json(emp);
+});
+
+app.delete('/api/employees/:id', (req, res) => {
+  const { token } = req.query;
+  if (token !== 'lingui_admin_2026') return res.status(401).json({ error: '口令错误' });
+  let emps = readEmployees();
+  emps = emps.filter(e => e.id !== req.params.id);
+  writeEmployees(emps);
+  res.json({ success: true });
+});
