@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<title>灵龟 · 员工工作台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC",sans-serif;background:#f5f6fa;color:#1a1a1a;font-size:14px}
+.ct{max-width:480px;margin:0 auto;min-height:100vh}
+.scr{display:none}.scr.on{display:block}
+
+/* login */
+.lg{padding:60px 24px 30px;text-align:center}
+.lg .tt{font-size:22px;font-weight:800;color:#1E5BB8;margin-bottom:6px}
+.lg .sb{font-size:14px;color:#888;margin-bottom:30px}
+.lg input{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:15px;margin-bottom:14px;outline:none}
+.lg input:focus{border-color:#1E5BB8}
+.lg button{width:100%;padding:14px;border:none;border-radius:10px;background:#1E5BB8;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+.lg .er{color:#DC2626;font-size:13px;margin-bottom:10px;display:none}
+
+/* top */
+.top{background:linear-gradient(135deg,#0B2A5B,#1E5BB8);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.top h2{font-size:16px}.top .lgout{font-size:13px;opacity:.85;cursor:pointer;padding:4px 0}
+
+/* stats */
+.st{display:flex;gap:8px;padding:14px;overflow-x:auto}
+.st-c{background:#fff;border-radius:10px;padding:12px 16px;text-align:center;flex:1;min-width:80px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.st-c .n{font-size:24px;font-weight:800}
+.st-c .l{font-size:11px;color:#888;margin-top:2px}
+
+/* filter */
+.fl{display:flex;gap:6px;padding:0 14px 12px;overflow-x:auto}
+.fl button{padding:6px 14px;border-radius:16px;border:1px solid #ddd;background:#fff;font-size:13px;cursor:pointer;white-space:nowrap}
+.fl button.on{background:#1E5BB8;color:#fff;border-color:#1E5BB8}
+
+/* lead cards */
+.lc{padding:0 14px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.card .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.card .h .ph{font-weight:700;font-size:15px}
+.tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.tag.b{background:#E8F0FE;color:#1E5BB8}
+.tag.s{background:#FDEDF0;color:#B8324A}
+.tag.st-new{background:#E8F0FE;color:#1E5BB8}
+.tag.st-contacted{background:#FFF3E0;color:#E65100}
+.tag.st-converted{background:#E8F5E9;color:#2E7D32}
+.tag.st-closed{background:#f0f0f0;color:#888}
+.tag.lv{background:#FFF3E0;color:#E65100}
+.card .row{font-size:13px;color:#666;margin:3px 0}
+.card .v{display:flex;gap:6px;align-items:center;margin-top:8px}
+.card .v .sc{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:700;font-size:15px;color:#fff}
+.card .btn{display:inline-block;padding:6px 14px;border:none;border-radius:8px;background:#1E5BB8;color:#fff;font-size:12px;cursor:pointer}
+
+/* detail modal */
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-start;justify-content:center;padding:16px 10px;overflow:auto;z-index:100}
+.mod.on{display:flex}
+.mod .bx{background:#fff;border-radius:14px;max-width:480px;width:100%;padding:20px;margin:auto}
+.mod .x{float:right;cursor:pointer;font-size:20px;color:#aaa}
+.mod h2{font-size:17px;margin:0 0 12px}
+.mod .rw{font-size:14px;margin:5px 0;line-height:1.6}
+.dm{margin:6px 0;font-size:13px}
+.dm .lb{display:flex;justify-content:space-between;margin-bottom:2px}
+.dm .tr{height:8px;background:#eff2f7;border-radius:4px;overflow:hidden}
+.dm .fl{height:100%;border-radius:4px}
+.mod .nk{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;min-height:60px;resize:vertical;margin:8px 0}
+.mod .nb{width:100%;padding:12px;border:none;border-radius:8px;background:#1E5BB8;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.mod .nb:disabled{opacity:.5}
+.empt{text-align:center;padding:40px;color:#aaa;font-size:14px}
+.empt .i{font-size:48px;margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="ct">
+  <!-- Login -->
+  <div class="scr on" id="s-login">
+    <div class="lg">
+      <div class="tt">🐢 灵龟新传媒</div>
+      <div class="sb">员工工作台 · 请登录</div>
+      <div class="er" id="lerr"></div>
+      <input id="user" placeholder="账号" onkeydown="if(event.key==='Enter')doLogin()" />
+      <input id="pass" placeholder="密码" type="password" onkeydown="if(event.key==='Enter')doLogin()" />
+      <button onclick="doLogin()">登 录</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="scr" id="s-dash">
+    <div class="top"><h2>🙂 你好，<span id="ename"></span></h2><span class="lgout" onclick="doLogout()">退出</span></div>
+    <div class="st" id="stats"></div>
+    <div class="fl" id="filters"></div>
+    <div class="lc" id="list"></div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div class="mod" id="detail"><div class="bx">
+  <span class="x" onclick="closeDetail()">✕</span>
+  <h2 id="d-title"></h2>
+  <div id="d-body"></div>
+</div></div>
+
+<script>
+var TOKEN = '';
+var EMP = {};
+var LEADS = [];
+
+function doLogin() {
+  var u = document.getElementById('user').value.trim();
+  var p = document.getElementById('pass').value.trim();
+  if (!u || !p) { showErr('请填写账号和密码'); return; }
+  fetch('/api/employee/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username:u, password:p}) })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) { showErr(d.error); return; }
+    TOKEN = d.token; EMP = d;
+    document.getElementById('ename').textContent = d.name + (d.title?' ('+d.title+')':'');
+    loadLeads();
+    show('s-dash');
+  }).catch(function(){ showErr('网络错误'); });
+}
+function showErr(m){ var e=document.getElementById('lerr'); e.textContent=m; e.style.display='block'; }
+function show(id){ document.querySelectorAll('.scr').forEach(function(s){s.classList.remove('on');}); document.getElementById(id).classList.add('on'); window.scrollTo(0,0); }
+
+function loadLeads() {
+  fetch('/api/employee/leads?token='+TOKEN).then(function(r){return r.json();}).then(function(d){
+    LEADS = d.leads || [];
+    render();
+  }).catch(function(){});
+}
+
+function render() {
+  var ls = LEADS;
+  // Stats
+  var total = ls.length, news = ls.filter(function(l){return (l.status||'new')==='new';}).length;
+  var highs = ls.filter(function(l){return (l.result&&l.result.total>=70)||l.total>=70;}).length;
+  document.getElementById('stats').innerHTML = ''
+    + '<div class="st-c"><div class="n">'+total+'</div><div class="l">分配线索</div></div>'
+    + '<div class="st-c"><div class="n">'+news+'</div><div class="l">待跟进</div></div>'
+    + '<div class="st-c"><div class="n">'+highs+'</div><div class="l">高分(≥70)</div></div>';
+  // List
+  if (ls.length === 0) {
+    document.getElementById('list').innerHTML = '<div class="empt"><div class="i">📋</div><div>暂无分配给你的线索</div></div>';
+    return;
+  }
+  var stNames = { new:'新线索', contacted:'已联系', converted:'已转化', closed:'已关闭' };
+  document.getElementById('list').innerHTML = ls.map(function(l){
+    var st = l.status || 'new';
+    var time = l.createdAt ? new Date(l.createdAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit'}) : '';
+    var tc = l.type === 'buyer' ? 'b' : 's';
+    var tn = l.type === 'buyer' ? '买房客户' : '自媒体学员';
+    var total = (l.result&&l.result.total) || l.total || '-';
+    var level = (l.result&&l.result.level) || l.level || '-';
+    var color = total >= 80 ? '#1E5BB8' : total >= 60 ? '#FB8C00' : '#DC2626';
+    return '<div class="card"><div class="h"><span class="ph">📞 '+(l.phone||l.wechat||'未留')+'</span><span class="tag '+tc+'">'+tn+'</span></div>'
+      + '<div class="row">提交：'+time+' 得分：'+total+' 等级：'+level+'</div>'
+      + '<div class="v"><span class="tag st-'+st+'">'+(stNames[st]||st)+'</span>'
+      + '<button class="btn" onclick="openDetail(\''+l.id+'\')">查看详情</button></div></div>';
+  }).join('');
+}
+
+function openDetail(id) {
+  var l = LEADS.find(function(x){return x.id===id;}); if (!l) return;
+  var r = l.result || {};
+  var dims = (r.dims||[]).map(function(d){
+    var c = d.pct < 50 ? '#DC2626' : d.pct < 70 ? '#FB8C00' : '#1E5BB8';
+    return '<div class="dm"><div class="lb"><span>'+d.code+' '+d.name+'</span><span style="color:'+c+';font-weight:700">'+d.pct+'分</span></div><div class="tr"><div class="fl" style="width:'+d.pct+'%;background:'+c+'"></div></div></div>';
+  }).join('');
+  var weak = (r.weakDims||[]).map(function(w){ return '<div style="font-size:13px;color:#DC2626;margin:2px 0">• '+w.name+'（'+w.pct+'分）</div>'; }).join('') || '无明显短板';
+  var notes = (l.notes||'暂无跟进记录').replace(/\n/g,'<br>');
+  document.getElementById('d-title').textContent = (l.phone||l.wechat||'客户')+' 的详情';
+  document.getElementById('d-body').innerHTML = ''
+    + '<div class="rw"><b>类型：</b>'+(l.type==='buyer'?'买房客户':'自媒体学员')+'　<b>综合分：</b>'+((r.total||l.total)||'-')+'　<b>等级：</b>'+((r.level||l.level)||'-')+'</div>'
+    + '<div class="rw"><b>联系方式：</b>'+(l.phone||l.wechat||'-')+'　<b>提交：</b>'+(l.createdAt?new Date(l.createdAt).toLocaleString('zh-CN'):'-')+'</div>'
+    + (dims ? '<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">六大维度评分</div>'+dims : '')
+    + '<hr style="margin:8px 0;border:none;border-top:1px solid #eee"><div style="font-weight:700;margin:6px 0">跟进备注</div>'
+    + '<div style="font-size:13px;color:#555;background:#f9f9f9;padding:10px;border-radius:8px;margin-bottom:8px;line-height:1.6">'+notes+'</div>'
+    + '<textarea class="nk" id="nk" placeholder="输入跟进内容…"></textarea>'
+    + '<button class="nb" id="nbtn" onclick="addNote(\''+l.id+'\')">添加跟进</button>';
+  document.getElementById('detail').classList.add('on');
+}
+function closeDetail(){ document.getElementById('detail').classList.remove('on'); }
+
+function addNote(id) {
+  var note = document.getElementById('nk').value.trim();
+  if (!note) { alert('请填写跟进内容'); return; }
+  var btn = document.getElementById('nbtn'); btn.disabled = true; btn.textContent = '提交中…';
+  fetch('/api/employee/leads/'+id+'/note?token='+TOKEN, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({note:note}) })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) { alert(d.error); btn.disabled = false; btn.textContent = '添加跟进'; return; }
+    loadLeads();
+    // Refresh detail
+    var l = LEADS.find(function(x){return x.id===id;});
+    if (l) openDetail(id);
+    btn.disabled = false; btn.textContent = '添加跟进';
+  }).catch(function(){ alert('提交失败'); btn.disabled = false; btn.textContent = '添加跟进'; });
+}
+
+function doLogout() {
+  fetch('/api/employee/logout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token:TOKEN}) }).catch(function(){});
+  TOKEN = ''; EMP = {};
+  document.getElementById('user').value = ''; document.getElementById('pass').value = '';
+  document.getElementById('lerr').style.display = 'none';
+  show('s-login');
+}
+</script>
+</body>
+</html>

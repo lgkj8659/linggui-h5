@@ -271,7 +271,9 @@ function addEmployee(){
   var n=document.getElementById('emp-name').value.trim();if(!n){alert('请填写员工姓名');return;}
   var t=document.getElementById('emp-title').value.trim();
   var p=document.getElementById('emp-phone').value.trim();
-  if(DATA.server){fetch('/api/employees?token='+DATA.token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,title:t})}).then(function(){document.getElementById('emp-name').value='';document.getElementById('emp-title').value='';document.getElementById('emp-phone').value='';loadEmployees();}).catch(function(){});document.getElementById('emp-list').innerHTML='<div style="text-align:center;padding:20px;color:#888">已提交，刷新列表…</div>';setTimeout(manageEmployees,1000);}
+  var u=document.getElementById('emp-username').value.trim();if(!u){alert('请填写登录账号');return;}
+  var pw=document.getElementById('emp-password').value.trim();if(!pw){alert('请填写登录密码');return;}
+  if(DATA.server){fetch('/api/employees?token='+DATA.token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,title:t,username:u,password:pw})}).then(function(){document.getElementById('emp-name').value='';document.getElementById('emp-title').value='';document.getElementById('emp-phone').value='';document.getElementById('emp-username').value='';document.getElementById('emp-password').value='';loadEmployees();}).catch(function(){});document.getElementById('emp-list').innerHTML='<div style="text-align:center;padding:20px;color:#888">已提交，刷新列表…</div>';setTimeout(manageEmployees,1000);}
 }
 function deleteEmployee(id){if(!confirm('确定删除该员工？'))return;if(DATA.server){fetch('/api/employees/'+id+'?token='+DATA.token,{method:'DELETE'}).then(function(){loadEmployees();manageEmployees();}).catch(function(){});}}
 function updateAssignee(id){var a=document.getElementById('assign-select').value;if(DATA.server){fetch('/api/leads/'+id+'?token='+DATA.token,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({assignee:a})}).catch(function(){});}}
@@ -284,6 +286,7 @@ function updateAssignee(id){var a=document.getElementById('assign-select').value
   <hr style="margin:12px 0;border:none;border-top:1px solid #eee" />
   <div style="display:flex;gap:8px;margin-bottom:8px"><input id="emp-name" placeholder="员工姓名" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /><input id="emp-title" placeholder="职称(选填)" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /></div>
 <div style="display:flex;gap:8px"><input id="emp-phone" placeholder="手机号(选填)" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /><button onclick="addEmployee()" style="padding:10px 16px;border:none;border-radius:8px;background:#1E5BB8;color:#fff;font-weight:600;cursor:pointer;white-space:nowrap">添加</button></div>
+  <div style="display:flex;gap:8px;margin-top:8px"><input id="emp-username" placeholder="登录账号" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" /><input id="emp-password" placeholder="登录密码" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" type="password" /></div>
 </div></div>
 
 </body>

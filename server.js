@@ -154,13 +154,15 @@ app.get('/api/employees', (req, res) => {
 app.post('/api/employees', (req, res) => {
   const { token } = req.query;
   if (token !== 'lingui_admin_2026') return res.status(401).json({ error: '口令错误' });
-  const { name, phone, title } = req.body;
+  const { name, phone, title, username, password } = req.body;
   if (!name) return res.status(400).json({ error: '请填写员工姓名' });
+  if (!username) return res.status(400).json({ error: '请填写登录账号' });
   const emps = readEmployees();
-  const emp = { id: 'emp_' + Date.now().toString(36), name: name.trim(), phone: (phone || '').trim(), title: (title || '').trim(), createdAt: new Date().toISOString() };
+  if (emps.find(e => e.username === username)) return res.status(400).json({ error: '账号已存在' });
+  const emp = { id: 'emp_' + Date.now().toString(36), name: name.trim(), phone: (phone || '').trim(), title: (title || '').trim(), username: username.trim(), password: crypto.createHash('sha256').update(password||'123456').digest('hex'), createdAt: new Date().toISOString() };
   emps.push(emp);
   writeEmployees(emps);
-  res.json(emp);
+  res.json({ id: emp.id, name: emp.name, phone: emp.phone, title: emp.title, username: emp.username });
 });
 
 app.delete('/api/employees/:id', (req, res) => {
@@ -169,5 +171,53 @@ app.delete('/api/employees/:id', (req, res) => {
   let emps = readEmployees();
   emps = emps.filter(e => e.id !== req.params.id);
   writeEmployees(emps);
+ res.json({ success: true });
+});
+/* ===================== 员工登录/权限 ===================== */
+app.post('/api/employee/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: '请填写账号和密码' });
+  const emps = readEmployees();
+  const emp = emps.find(e => e.username === username && e.password === crypto.createHash('sha256').update(password).digest('hex'));
+  if (!emp) return res.status(401).json({ error: '账号或密码错误' });
+  emp.token = crypto.randomBytes(16).toString('hex');
+  writeEmployees(emps);
+  res.json({ token: emp.token, name: emp.name, title: emp.title, id: emp.id });
+});
+app.get('/api/employee/leads', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(401).json({ error: '未登录' });
+  const emps = readEmployees();
+  const emp = emps.find(e => e.token === token);
+  if (!emp) return res.status(401).json({ error: '登录已过期' });
+  const leads = readLeads().filter(l => l.assignee === emp.name);
+  res.json({ leads, employee: { name: emp.name, title: emp.title } });
+});
+app.post('/api/employee/leads/:id/note', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.status(401).json({ error: '未登录' });
+  const emps = readEmployees();
+  const emp = emps.find(e => e.token === token);
+  if (!emp) return res.status(401).json({ error: '登录已过期' });
+  const { note } = req.body;
+  if (!note || !note.trim()) return res.status(400).json({ error: '请填写跟进内容' });
+  const leads = readLeads();
+  const idx = leads.findIndex(l => l.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: '未找到' });
+  if (leads[idx].assignee !== emp.name) return res.status(403).json({ error: '无权操作此客户' });
+  const now = new Date().toISOString();
+  const entry = '[' + emp.name + ' ' + new Date().toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) + '] ' + note.trim();
+  leads[idx].notes = (leads[idx].notes||'') + (leads[idx].notes?'\n':'') + entry;
+  if (!leads[idx].events) leads[idx].events = [];
+  leads[idx].events.push({ type:'note', value:note.trim() + ' (by ' + emp.name + ')', at:now });
+  writeLeads(leads);
+  res.json({ success: true });
+});
+app.post('/api/employee/logout', (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.json({ success: true });
+  const emps = readEmployees();
+  const emp = emps.find(e => e.token === token);
+  if (emp) { delete emp.token; writeEmployees(emps); }
   res.json({ success: true });
 });
