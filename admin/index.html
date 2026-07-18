@@ -91,6 +91,7 @@ tr:hover{background:#f7f9ff}
   <h2 id="m-title"></h2>
   <div id="m-body"></div>
 </div></div>
+<script src="../content.js"></script>
 <script>
 var DATA = { server: false, token: '' };
 var ALL = [];
@@ -171,11 +172,22 @@ function renderTable() {
 function detail(idx) {
   var l = ALL[idx]; if (!l) return;
   var r = l.result || {};
+  var ctype = l.type || 'buyer';
+  var ct = window.CONTENT && window.CONTENT[ctype];
   var dims = (r.dims || []).map(function(d){
     var c = d.pct < 50 ? '#DC2626' : d.pct < 70 ? '#FB8C00' : '#1E5BB8';
     return '<div class="dm-line">' + d.code + ' ' + d.name + '：<b style="color:' + c + '">' + d.pct + '分</b><div class="dm-bar"><div class="fl" style="width:' + d.pct + '%;background:' + c + '"></div></div></div>';
   }).join('');
   var weak = (r.weakDims || []).map(function(w){ return '<div>• ' + w.name + '（' + w.pct + '分）</div>'; }).join('') || '无明显短板';
+  var weakDetail = '';
+  if (ct && ct.weakCopy && r.weakDims) {
+    r.weakDims.forEach(function(w){
+      var wc = ct.weakCopy[w.code];
+      if (wc) weakDetail += '<div style="margin:8px 0 4px;padding:8px 10px;background:#fef2f2;border-radius:8px"><b style="color:#DC2626">' + w.name + '（' + w.pct + '分）</b><div style="font-size:13px;color:#555;margin:4px 0">问题点：' + wc.weak + '</div><div style="font-size:13px;color:#1E5BB8">建议：' + wc.fix + '</div></div>';
+    });
+  }
+  var acts = '';
+  if (ct && ct.actions) { acts = '<hr style="margin:10px 0;border:none;border-top:1px solid #eee" /><div style="font-weight:700;margin:8px 0">💡 建议行动</div>' + ct.actions.map(function(a){ return '<div style="font-size:13px;color:#444;margin:4px 0">• ' + a + '</div>'; }).join(''); }
   var st = l.status || 'new';
   var stBtns = ['new','contacted','converted','closed'].map(function(s){
     var names = { new:'新线索', contacted:'已联系', converted:'已转化', closed:'已关闭' };
@@ -187,7 +199,8 @@ function detail(idx) {
     + '<div class="row"><b>综合分：</b>' + (r.total||'-') + '　<b>等级：</b>' + (r.level||'-') + '　<b>提交时间：</b>' + (l.createdAt?new Date(l.createdAt).toLocaleString('zh-CN'):'-') + '</div>'
     + '<hr style="margin:10px 0;border:none;border-top:1px solid #eee" />';
   if (dims) { document.getElementById('m-body').innerHTML += '<div style="font-weight:700;margin:8px 0">六大维度评分</div>' + dims
-    + '<div style="font-weight:700;margin:10px 0 4px;color:#DC2626">核心短板</div>' + weak; }
+    + '<div style="font-weight:700;margin:10px 0 4px;color:#DC2626">核心短板</div>' + weak
+    + (weakDetail || '') + (acts || ''); }
   document.getElementById('m-body').innerHTML += ''
     + '<hr style="margin:10px 0;border:none;border-top:1px solid #eee" />'
     + '<div style="font-weight:700;margin:8px 0">状态管理</div>'
